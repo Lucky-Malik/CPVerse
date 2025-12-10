@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends & Leaderboard - CPVerse (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.0.3/plotly.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #e5e7eb; }
+        
+        /* Card Effects */
+        .friend-card { transition: all 0.3s ease; }
+        .friend-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15); 
+            border-color: #10b981;
+        }
+        
+        .leaderboard-row { transition: all 0.3s ease; border-bottom: 1px solid #1f2937; }
+        .leaderboard-row:last-child { border-bottom: none; }
+        .leaderboard-row:hover { background-color: #1f2937; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+        .rank-badge-gold { background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); color: black; }
+        .rank-badge-silver { background: linear-gradient(135deg, #9ca3af 0%, #4b5563 100%); color: white; }
+        .rank-badge-bronze { background: linear-gradient(135deg, #b45309 0%, #78350f 100%); color: white; }
+
+        .chart-container { min-height: 300px; }
+        
+        /* Input Styling */
+        .add-friend-input { 
+            background-color: #1f2937; 
+            border-color: #374151; 
+            color: white;
+            transition: all 0.3s ease; 
+        }
+        .add-friend-input:focus { 
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4); 
+            border-color: #10b981;
+        }
+        .add-friend-input::placeholder { color: #6b7280; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-700 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                            <span class="text-black font-bold text-sm">CP</span>
+                        </div>
+                        <span class="text-xl font-bold text-white tracking-tight">CPVerse</span>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition-colors">Dashboard</a>
+                        <a href="contests.html" class="text-gray-400 hover:text-green-400 transition-colors">Contests</a>
+                        <a href="practice.html" class="text-gray-400 hover:text-green-400 transition-colors">Practice</a>
+                        <a href="insights.html" class="text-gray-400 hover:text-green-400 transition-colors">Insights</a>
+                        <a href="friends.html" class="text-green-400 font-bold border-b-2 border-green-500 pb-1">Friends</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="profile.html" class="text-gray-400 hover:text-white transition-colors">Profile</a>
+                    <div class="w-8 h-8 bg-gray-700 border border-green-900 rounded-full flex items-center justify-center text-green-400 font-bold text-sm">
+                        LM
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Friends & Leaderboard</h1>
+            <p class="text-gray-400">Compare your progress with friends and climb the rankings</p>
+        </div>
+
+        <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800 mb-8">
+            <h3 class="text-xl font-bold text-white mb-4">Add Friend</h3>
+            <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <input 
+                    type="text" 
+                    placeholder="Enter username or email..." 
+                    class="add-friend-input flex-1 px-4 py-3 border border-gray-700 rounded-lg focus:outline-none w-full"
+                    id="friendInput"
+                >
+                <button 
+                    class="bg-green-600 text-black px-6 py-3 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all w-full sm:w-auto"
+                    onclick="addFriend()"
+                >
+                    👥 Add Friend
+                </button>
+            </div>
+            <div class="mt-4 text-sm text-gray-500">
+                Tip: You can add friends by their CPVerse username or email address
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">Your Friends</h3>
+                        <div class="text-sm text-gray-400">12 friends</div>
+                    </div>
+                    
+                    <div class="space-y-4" id="friendsList">
+                        <div class="friend-card bg-green-900/20 rounded-xl p-4 border border-green-500/50">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-700 rounded-full flex items-center justify-center text-black font-bold shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                                    LM
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <h4 class="font-bold text-white">Lucky Malik</h4>
+                                        <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-1 rounded-full text-xs font-medium">You</span>
+                                    </div>
+                                    <div class="text-sm text-gray-400">Combined Rating: 1,220</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-green-500">#4</div>
+                                    <div class="text-xs text-gray-500">Global Rank</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="friend-card bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-blue-500">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                                    AS
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <h4 class="font-bold text-white">Arjun Sharma</h4>
+                                        <span class="bg-green-900/30 text-green-400 px-2 py-1 rounded-full text-xs font-medium border border-green-900">Online</span>
+                                    </div>
+                                    <div class="text-sm text-gray-400">Combined Rating: 1,450</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-blue-500">#2</div>
+                                    <div class="text-xs text-gray-500">Global Rank</div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-gray-700">
+                                <div class="grid grid-cols-3 gap-4 text-xs">
+                                    <div class="text-center">
+                                        <div class="font-bold text-white">1,650</div>
+                                        <div class="text-gray-500">Codeforces</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-blue-400">920</div>
+                                        <div class="text-gray-500">AtCoder</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-green-400">520</div>
+                                        <div class="text-gray-500">LeetCode</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="friend-card bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-teal-500">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-black font-bold shadow-lg">
+                                    PK
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <h4 class="font-bold text-white">Priya Kapoor</h4>
+                                        <span class="bg-gray-700 text-gray-400 px-2 py-1 rounded-full text-xs font-medium">Offline</span>
+                                    </div>
+                                    <div class="text-sm text-gray-400">Combined Rating: 1,380</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-teal-400">#3</div>
+                                    <div class="text-xs text-gray-500">Global Rank</div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-gray-700">
+                                <div class="grid grid-cols-3 gap-4 text-xs">
+                                    <div class="text-center">
+                                        <div class="font-bold text-white">1,520</div>
+                                        <div class="text-gray-500">Codeforces</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-blue-400">850</div>
+                                        <div class="text-gray-500">AtCoder</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-green-400">480</div>
+                                        <div class="text-gray-500">LeetCode</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="friend-card bg-gray-800 rounded-xl p-4 border border-gray-700 hover:border-yellow-500">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center text-black font-bold shadow-lg">
+                                    RV
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <h4 class="font-bold text-white">Rahul Verma</h4>
+                                        <span class="bg-green-900/30 text-green-400 px-2 py-1 rounded-full text-xs font-medium border border-green-900">Online</span>
+                                    </div>
+                                    <div class="text-sm text-gray-400">Combined Rating: 1,180</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-yellow-500">#5</div>
+                                    <div class="text-xs text-gray-500">Global Rank</div>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t border-gray-700">
+                                <div class="grid grid-cols-3 gap-4 text-xs">
+                                    <div class="text-center">
+                                        <div class="font-bold text-white">1,320</div>
+                                        <div class="text-gray-500">Codeforces</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-blue-400">720</div>
+                                        <div class="text-gray-500">AtCoder</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-bold text-green-400">380</div>
+                                        <div class="text-gray-500">LeetCode</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1 space-y-8">
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                    <h3 class="text-xl font-bold text-white mb-6">Global Leaderboard</h3>
+                    <div class="space-y-1">
+                        <div class="leaderboard-row flex items-center space-x-3 p-3 rounded-lg">
+                            <div class="rank-badge-gold w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md">1</div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xs">AS</div>
+                            <div class="flex-1">
+                                <div class="font-medium text-white text-sm">Arjun Sharma</div>
+                                <div class="text-xs text-gray-500">1,450 rating</div>
+                            </div>
+                        </div>
+
+                        <div class="leaderboard-row flex items-center space-x-3 p-3 rounded-lg">
+                            <div class="rank-badge-silver w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md">2</div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-black font-bold text-xs">PK</div>
+                            <div class="flex-1">
+                                <div class="font-medium text-white text-sm">Priya Kapoor</div>
+                                <div class="text-xs text-gray-500">1,380 rating</div>
+                            </div>
+                        </div>
+
+                        <div class="leaderboard-row flex items-center space-x-3 p-3 rounded-lg">
+                            <div class="rank-badge-bronze w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md">3</div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-black font-bold text-xs">LM</div>
+                            <div class="flex-1">
+                                <div class="font-medium text-green-400 text-sm">Lucky Malik</div>
+                                <div class="text-xs text-gray-500">1,220 rating</div>
+                            </div>
+                        </div>
+
+                        <div class="leaderboard-row flex items-center space-x-3 p-3 rounded-lg">
+                            <div class="w-8 h-8 bg-gray-800 border border-gray-700 text-gray-400 rounded-full flex items-center justify-center font-bold text-sm">4</div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center text-black font-bold text-xs">RV</div>
+                            <div class="flex-1">
+                                <div class="font-medium text-white text-sm">Rahul Verma</div>
+                                <div class="text-xs text-gray-500">1,180 rating</div>
+                            </div>
+                        </div>
+
+                        <div class="leaderboard-row flex items-center space-x-3 p-3 rounded-lg">
+                            <div class="w-8 h-8 bg-gray-800 border border-gray-700 text-gray-400 rounded-full flex items-center justify-center font-bold text-sm">5</div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold text-xs">NK</div>
+                            <div class="flex-1">
+                                <div class="font-medium text-white text-sm">Neha Kapoor</div>
+                                <div class="text-xs text-gray-500">1,150 rating</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                    <h3 class="text-xl font-bold text-white mb-6">Rating Trends</h3>
+                    <div id="ratingComparisonChart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Rating Comparison Chart - Adjusted for Dark Mode
+        const comparisonData = [
+            {
+                x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                y: [1200, 1250, 1300, 1280, 1350, 1450],
+                name: 'Arjun',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#3b82f6', width: 3 }, // Blue
+                marker: { size: 6 }
+            },
+            {
+                x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                y: [1150, 1200, 1250, 1300, 1320, 1380],
+                name: 'Priya',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#2dd4bf', width: 3 }, // Teal
+                marker: { size: 6 }
+            },
+            {
+                x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                y: [1100, 1150, 1180, 1200, 1190, 1220],
+                name: 'You',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#10b981', width: 4 }, // Green (You)
+                marker: { size: 10, color: '#10b981', line: { color: '#ffffff', width: 1 } }
+            },
+            {
+                x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                y: [1050, 1080, 1120, 1150, 1170, 1180],
+                name: 'Rahul',
+                type: 'scatter',
+                mode: 'lines+markers',
+                line: { color: '#f59e0b', width: 3 }, // Orange
+                marker: { size: 6 }
+            }
+        ];
+
+        const comparisonLayout = {
+            xaxis: { 
+                title: 'Month',
+                gridcolor: '#374151',
+                tickfont: { color: '#9ca3af' },
+                titlefont: { color: '#d1d5db' }
+            },
+            yaxis: { 
+                title: 'Combined Rating',
+                gridcolor: '#374151',
+                tickfont: { color: '#9ca3af' },
+                titlefont: { color: '#d1d5db' }
+            },
+            showlegend: true,
+            legend: { x: 0, y: 1, font: { color: '#e5e7eb' } },
+            margin: { t: 20, r: 20, b: 50, l: 50 },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        Plotly.newPlot('ratingComparisonChart', comparisonData, comparisonLayout, { responsive: true, displayModeBar: false });
+
+        // Add friend functionality
+        function addFriend() {
+            const input = document.getElementById('friendInput');
+            const username = input.value.trim();
+            
+            if (username) {
+                showNotification(`Friend request sent to ${username}!`, 'success');
+                input.value = '';
+            } else {
+                showNotification('Please enter a username', 'error');
+            }
+        }
+
+        // Enter key support for adding friends
+        document.getElementById('friendInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addFriend();
+            }
+        });
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            // Updated Notification Colors for Dark Mode
+            const bgClass = type === 'success' ? 'bg-green-600 text-black font-bold' : 'bg-red-600 text-white';
+            
+            notification.className = `fixed top-24 right-4 z-50 px-6 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-x-full flex items-center gap-2 ${bgClass}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            requestAnimationFrame(() => {
+                notification.classList.remove('translate-x-full');
+            });
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Animate cards on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.friend-card, .leaderboard-row');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

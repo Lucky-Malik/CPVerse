@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contests - CPVerse (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #e5e7eb; }
+        
+        /* Card Effects */
+        .contest-card { transition: all 0.3s ease; }
+        .contest-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15); 
+            border-color: #10b981;
+        }
+
+        /* Platform Colors */
+        .platform-cf { background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); }
+        .platform-ac { background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); }
+        .platform-cc { background: linear-gradient(135deg, #b45309 0%, #92400e 100%); }
+        .platform-lc { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+
+        /* UI Elements */
+        .filter-btn { background-color: #1f2937; color: #9ca3af; border: 1px solid #374151; }
+        .filter-btn:hover { border-color: #10b981; color: #10b981; }
+        .filter-btn.active { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: #000000; 
+            border-color: transparent;
+            font-weight: 700;
+        }
+        
+        .calendar-event { background: #111827; border-left: 4px solid #10b981; }
+
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-700 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                            <span class="text-black font-bold text-sm">CP</span>
+                        </div>
+                        <span class="text-xl font-bold text-white tracking-tight">CPVerse</span>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition-colors">Dashboard</a>
+                        <a href="contests.html" class="text-green-400 font-bold border-b-2 border-green-500 pb-1">Contests</a>
+                        <a href="practice.html" class="text-gray-400 hover:text-green-400 transition-colors">Practice</a>
+                        <a href="insights.html" class="text-gray-400 hover:text-green-400 transition-colors">Insights</a>
+                        <a href="friends.html" class="text-gray-400 hover:text-green-400 transition-colors">Friends</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="profile.html" class="text-gray-400 hover:text-white transition-colors">Profile</a>
+                    <div class="w-8 h-8 bg-gray-700 border border-green-900 rounded-full flex items-center justify-center text-green-400 font-bold text-sm">
+                        LM
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Upcoming Contests</h1>
+            <p class="text-gray-400">Stay updated with contests from all major platforms</p>
+        </div>
+
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-3">
+                <button class="filter-btn active px-4 py-2 rounded-lg font-medium transition-all" data-filter="all">
+                    All Platforms
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-lg font-medium transition-all" data-filter="codeforces">
+                    Codeforces
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-lg font-medium transition-all" data-filter="atcoder">
+                    AtCoder
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-lg font-medium transition-all" data-filter="codechef">
+                    CodeChef
+                </button>
+                <button class="filter-btn px-4 py-2 rounded-lg font-medium transition-all" data-filter="leetcode">
+                    LeetCode
+                </button>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="space-y-4" id="contestsList">
+                    
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #800 (Div. 1 + Div. 2)</h3>
+                                    <p class="text-gray-500">Official contest for advanced programmers</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 3 days</div>
+                                <div class="text-xs text-gray-500">Nov 10, 15:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+145</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-11-10-1"
+                                    data-contest-title="Codeforces Round #800"
+                                    data-contest-date="Nov 10, 15:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Global Round 29</h3>
+                                    <p class="text-gray-500">One of the major, unrated-for-debutants rounds</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 1 week</div>
+                                <div class="text-xs text-gray-500">Nov 16, 17:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-red-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+200</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-11-16-1"
+                                    data-contest-title="Codeforces Global Round 29"
+                                    data-contest-date="Nov 16, 17:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #801 (Div. 2)</h3>
+                                    <p class="text-gray-500">Standard Division 2 contest for Newbie/Pupil/Specialist</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 10 days</div>
+                                <div class="text-xs text-gray-500">Nov 19, 13:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-11-19-1"
+                                    data-contest-title="Codeforces Round #801 (Div. 2)"
+                                    data-contest-date="Nov 19, 13:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #802 (Div. 1)</h3>
+                                    <p class="text-gray-500">High-level contest for Candidate Master and above</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 2 weeks</div>
+                                <div class="text-xs text-gray-500">Nov 23, 16:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-red-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+180</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-11-23-1"
+                                    data-contest-title="Codeforces Round #802 (Div. 1)"
+                                    data-contest-date="Nov 23, 16:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Beginner Contest 351</h3>
+                                    <p class="text-gray-500">Beginner-friendly contest with 6 problems</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">Tomorrow</div>
+                                <div class="text-xs text-gray-500">Nov 8, 12:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 40m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★☆☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+120</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-11-08-1"
+                                    data-contest-title="AtCoder Beginner Contest 351"
+                                    data-contest-date="Nov 8, 12:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Regular Contest 160</h3>
+                                    <p class="text-gray-500">Intermediate-to-advanced level contest</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 4 days</div>
+                                <div class="text-xs text-gray-500">Nov 11, 12:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+150</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-11-11-1"
+                                    data-contest-title="AtCoder Regular Contest 160"
+                                    data-contest-date="Nov 11, 12:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Grand Contest 065</h3>
+                                    <p class="text-gray-500">The most difficult AtCoder round</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 3 weeks</div>
+                                <div class="text-xs text-gray-500">Nov 30, 06:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">3h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-red-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+250</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-11-30-1"
+                                    data-contest-title="AtCoder Grand Contest 065"
+                                    data-contest-date="Nov 30, 06:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Beginner Contest 352</h3>
+                                    <p class="text-gray-500">Next installment of the beginner series</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 1 month</div>
+                                <div class="text-xs text-gray-500">Dec 9, 12:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 40m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★☆☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-12-09-1"
+                                    data-contest-title="AtCoder Beginner Contest 352"
+                                    data-contest-date="Dec 9, 12:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Starters 120</h3>
+                                    <p class="text-gray-500">3-hour contest with 5 problems</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 5 days</div>
+                                <div class="text-xs text-gray-500">Nov 12, 14:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">3h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-11-12-1"
+                                    data-contest-title="CodeChef Starters 120"
+                                    data-contest-date="Nov 12, 14:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Long Challenge November</h3>
+                                    <p class="text-gray-500">The monthly 10-day long challenge</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 1 week</div>
+                                <div class="text-xs text-gray-500">Nov 15, 15:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">10d</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+150</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-11-15-1"
+                                    data-contest-title="CodeChef Long Challenge November"
+                                    data-contest-date="Nov 15, 15:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Starters 121</h3>
+                                    <p class="text-gray-500">Next short contest in the Starters series</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 12 days</div>
+                                <div class="text-xs text-gray-500">Nov 21, 14:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">3h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-11-21-1"
+                                    data-contest-title="CodeChef Starters 121"
+                                    data-contest-date="Nov 21, 14:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Starters 122</h3>
+                                    <p class="text-gray-500">Another contest for intermediate competitive programmers</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 19 days</div>
+                                <div class="text-xs text-gray-500">Nov 28, 14:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">3h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-11-28-1"
+                                    data-contest-title="CodeChef Starters 122"
+                                    data-contest-date="Nov 28, 14:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Weekly Contest 420</h3>
+                                    <p class="text-gray-500">Weekly contest with 4 algorithm problems</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 4 days</div>
+                                <div class="text-xs text-gray-500">Nov 11, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+200</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-11-11-1"
+                                    data-contest-title="LeetCode Weekly Contest 420"
+                                    data-contest-date="Nov 11, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Biweekly Contest 140</h3>
+                                    <p class="text-gray-500">Bi-weekly contest with focus on advanced algorithms</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 9 days</div>
+                                <div class="text-xs text-gray-500">Nov 18, 02:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+300</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-11-18-1"
+                                    data-contest-title="LeetCode Biweekly Contest 140"
+                                    data-contest-date="Nov 18, 02:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Weekly Contest 421</h3>
+                                    <p class="text-gray-500">The next weekly installment</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 11 days</div>
+                                <div class="text-xs text-gray-500">Nov 20, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+200</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-11-20-1"
+                                    data-contest-title="LeetCode Weekly Contest 421"
+                                    data-contest-date="Nov 20, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Weekly Contest 422</h3>
+                                    <p class="text-gray-500">Fourth weekly contest in November</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 18 days</div>
+                                <div class="text-xs text-gray-500">Nov 27, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+200</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-11-27-1"
+                                    data-contest-title="LeetCode Weekly Contest 422"
+                                    data-contest-date="Nov 27, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #803 (Div. 1 Only)</h3>
+                                    <p class="text-gray-500">For Masters and International Grandmasters</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 3 weeks</div>
+                                <div class="text-xs text-gray-500">Dec 3, 14:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-red-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+250</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-12-03-1"
+                                    data-contest-title="Codeforces Round #803 (Div. 1 Only)"
+                                    data-contest-date="Dec 3, 14:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Marathon Challenge 005</h3>
+                                    <p class="text-gray-500">Optimization-focused long-duration contest</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 2 weeks</div>
+                                <div class="text-xs text-gray-500">Nov 25, 09:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">7d</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty (Opt)</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+180</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-11-25-1"
+                                    data-contest-title="AtCoder Marathon Challenge 005"
+                                    data-contest-date="Nov 25, 09:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Starters 123 (Wednesday)</h3>
+                                    <p class="text-gray-500">A midweek short-format contest</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 3 weeks</div>
+                                <div class="text-xs text-gray-500">Dec 4, 14:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2.5h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-12-04-1"
+                                    data-contest-title="CodeChef Starters 123"
+                                    data-contest-date="Dec 4, 14:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Monthly Premium Contest 11</h3>
+                                    <p class="text-gray-500">Premium-only contest with difficult problems</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 1 month</div>
+                                <div class="text-xs text-gray-500">Dec 8, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-red-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+400</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-12-08-1"
+                                    data-contest-title="LeetCode Monthly Premium Contest 11"
+                                    data-contest-date="Dec 8, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #804 (Div. 3)</h3>
+                                    <p class="text-gray-500">Contest for Newbies and Pupils (rated up to 1600)</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 14 days</div>
+                                <div class="text-xs text-gray-500">Nov 23, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h 15m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★☆☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+80</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-11-23-2"
+                                    data-contest-title="Codeforces Round #804 (Div. 3)"
+                                    data-contest-date="Nov 23, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Heuristic Contest 035</h3>
+                                    <p class="text-gray-500">A weekend contest focused on practical optimization</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 18 days</div>
+                                <div class="text-xs text-gray-500">Nov 27, 09:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">10d</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty (Opt)</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+220</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-11-27-1"
+                                    data-contest-title="AtCoder Heuristic Contest 035"
+                                    data-contest-date="Nov 27, 09:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Cook-Off November</h3>
+                                    <p class="text-gray-500">The monthly 2.5-hour short contest</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 15 days</div>
+                                <div class="text-xs text-gray-500">Nov 24, 15:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2.5h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+120</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-11-24-1"
+                                    data-contest-title="CodeChef Cook-Off November"
+                                    data-contest-date="Nov 24, 15:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Weekly Contest 423</h3>
+                                    <p class="text-gray-500">Final weekly contest of November</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 25 days</div>
+                                <div class="text-xs text-gray-500">Dec 4, 08:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-green-400">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+200</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-12-04-1"
+                                    data-contest-title="LeetCode Weekly Contest 423"
+                                    data-contest-date="Dec 4, 08:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codeforces">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cf w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CF</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">Codeforces Round #805 (Div. 2)</h3>
+                                    <p class="text-gray-500">Standard Div 2 on a weekend evening</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 26 days</div>
+                                <div class="text-xs text-gray-500">Dec 5, 17:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★☆</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+100</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cf-2025-12-05-1"
+                                    data-contest-title="Codeforces Round #805 (Div. 2)"
+                                    data-contest-date="Dec 5, 17:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="atcoder">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-ac w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">AC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">AtCoder Regular Contest 161</h3>
+                                    <p class="text-gray-500">Next high-tier contest for high-rated users</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 28 days</div>
+                                <div class="text-xs text-gray-500">Dec 7, 12:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">2h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+150</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="ac-2025-12-07-1"
+                                    data-contest-title="AtCoder Regular Contest 161"
+                                    data-contest-date="Dec 7, 12:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="codechef">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-cc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">CC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">CodeChef Lunchtime December</h3>
+                                    <p class="text-gray-500">The monthly short contest (Div 1-3)</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 1 month</div>
+                                <div class="text-xs text-gray-500">Dec 9, 15:00 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">3h</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-500">+120</div>
+                                <div class="text-xs text-gray-500">Max Rating</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="cc-2025-12-09-1"
+                                    data-contest-title="CodeChef Lunchtime December"
+                                    data-contest-date="Dec 9, 15:00 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="contest-card bg-gray-900 rounded-xl p-6 shadow-lg border border-gray-800 animate-fade-in" data-platform="leetcode">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="platform-lc w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">LC</div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-white">LeetCode Biweekly Contest 141</h3>
+                                    <p class="text-gray-500">First biweekly contest of December</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm text-green-400 font-medium">In 26 days</div>
+                                <div class="text-xs text-gray-500">Dec 5, 02:30 UTC</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 mb-4 border-t border-b border-gray-800 py-4">
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-white">1h 30m</div>
+                                <div class="text-xs text-gray-500">Duration</div>
+                            </div>
+                            <div class="text-center border-r border-gray-800">
+                                <div class="text-2xl font-bold text-yellow-500">★★★</div>
+                                <div class="text-xs text-gray-500">Difficulty</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-500">+300</div>
+                                <div class="text-xs text-gray-500">Points</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <a href="#" class="text-gray-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                                View Details <span class="text-green-500">→</span>
+                            </a>
+                            <button class="add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all" 
+                                    data-contest-id="lc-2025-12-05-1"
+                                    data-contest-title="LeetCode Biweekly Contest 141"
+                                    data-contest-date="Dec 5, 02:30 UTC">
+                                📅 Add to Calendar
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800 sticky top-24">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-white">My Calendar</h3>
+                        <span class="bg-green-900 text-green-400 text-xs font-bold px-2 py-1 rounded-full border border-green-800" id="eventCountBadge">1 Event</span>
+                    </div>
+                    
+                    <div class="space-y-4" id="calendarEvents">
+                        <div class="calendar-event rounded-lg p-4 border-l-4 border-green-500 bg-gray-800 shadow-sm" id="cal-preset-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-bold text-white text-sm">Hackerrank World Cup</div>
+                                <button class="text-gray-500 hover:text-red-500 text-lg leading-none transition-colors" onclick="removeFromCalendar('preset-1')">×</button>
+                            </div>
+                            <div class="text-xs text-gray-400 flex items-center gap-1">
+                                <span>🕒</span> Nov 15, 09:00 UTC
+                            </div>
+                            <div class="text-xs text-green-400 mt-2 font-medium">Reminder: 30 min before</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t border-gray-800">
+                        <div class="text-xs text-gray-500 text-center">
+                            Syncs locally for demo
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- State Management ---
+            let calendarEvents = {
+                'preset-1': { name: 'Hackerrank World Cup', date: 'Nov 15, 09:00 UTC' }
+            };
+
+            // --- Filtering Logic ---
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const contestCards = document.querySelectorAll('.contest-card');
+
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => { 
+                        b.classList.remove('active'); 
+                    });
+                    this.classList.add('active');
+                    const filterValue = this.dataset.filter;
+
+                    contestCards.forEach(card => {
+                        card.classList.remove('animate-fade-in');
+                        void card.offsetWidth; // Trigger reflow
+
+                        if (filterValue === 'all' || card.dataset.platform === filterValue) {
+                            card.style.display = 'block';
+                            card.classList.add('animate-fade-in');
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // --- Calendar Logic ---
+            const calendarContainer = document.getElementById('calendarEvents');
+            const eventCountBadge = document.getElementById('eventCountBadge');
+            const addToCalendarBtns = document.querySelectorAll('.add-to-calendar');
+
+            checkButtonStates();
+
+            addToCalendarBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.contestId;
+                    const title = this.dataset.contestTitle;
+                    const date = this.dataset.contestDate;
+                    
+                    if (!calendarEvents[id]) {
+                        addEvent(id, title, date);
+                        updateButtonState(this, true);
+                        showNotification('Contest added to calendar!', 'success');
+                    }
+                });
+            });
+
+            function addEvent(id, title, date) {
+                calendarEvents[id] = { name: title, date: date };
+                renderCalendar();
+            }
+
+            window.removeFromCalendar = function(id) {
+                if (calendarEvents[id]) {
+                    delete calendarEvents[id];
+                    renderCalendar();
+                    
+                    const btn = document.querySelector(`[data-contest-id="${id}"]`);
+                    if (btn) updateButtonState(btn, false);
+                    
+                    showNotification('Contest removed from calendar', 'info');
+                }
+            };
+
+            function renderCalendar() {
+                calendarContainer.innerHTML = '';
+                const ids = Object.keys(calendarEvents);
+                
+                if (ids.length === 0) {
+                    calendarContainer.innerHTML = '<div class="text-sm text-gray-600 text-center py-4 italic">No upcoming events tracked</div>';
+                    eventCountBadge.textContent = '0 Events';
+                    eventCountBadge.classList.replace('text-green-400', 'text-gray-500');
+                    eventCountBadge.classList.replace('bg-green-900', 'bg-gray-800');
+                } else {
+                    eventCountBadge.textContent = `${ids.length} Event${ids.length > 1 ? 's' : ''}`;
+                    eventCountBadge.classList.replace('text-gray-500', 'text-green-400');
+                    eventCountBadge.classList.replace('bg-gray-800', 'bg-green-900');
+                }
+
+                ids.forEach(id => {
+                    const event = calendarEvents[id];
+                    const html = `
+                        <div class="calendar-event rounded-lg p-4 border-l-4 border-green-500 bg-gray-800 shadow-sm animate-fade-in">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="font-bold text-white text-sm">${event.name}</div>
+                                <button class="text-gray-500 hover:text-red-500 text-lg leading-none transition-colors" onclick="removeFromCalendar('${id}')">×</button>
+                            </div>
+                            <div class="text-xs text-gray-400 flex items-center gap-1">
+                                <span>🕒</span> ${event.date}
+                            </div>
+                            <div class="text-xs text-green-400 mt-2 font-medium">Reminder: 30 min before</div>
+                        </div>
+                    `;
+                    calendarContainer.insertAdjacentHTML('beforeend', html);
+                });
+            }
+
+            function updateButtonState(btn, isAdded) {
+                if (isAdded) {
+                    btn.textContent = '✓ Added';
+                    btn.className = 'add-to-calendar bg-gray-800 text-green-500 border border-green-900 px-5 py-2.5 rounded-lg font-bold cursor-not-allowed opacity-70';
+                    btn.disabled = true;
+                } else {
+                    btn.textContent = '📅 Add to Calendar';
+                    btn.className = 'add-to-calendar bg-green-600 text-black px-5 py-2.5 rounded-lg font-bold hover:bg-green-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all';
+                    btn.disabled = false;
+                }
+            }
+
+            function checkButtonStates() {
+                addToCalendarBtns.forEach(btn => {
+                    const id = btn.dataset.contestId;
+                    if (calendarEvents[id]) {
+                        updateButtonState(btn, true);
+                    }
+                });
+            }
+
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                const bgClass = type === 'success' ? 'bg-green-600 text-black font-bold' : 'bg-gray-800 text-white border border-green-900';
+                
+                notification.className = `fixed top-24 right-4 z-50 px-6 py-3 rounded-lg shadow-2xl transition-all duration-300 transform translate-x-full flex items-center gap-2 ${bgClass}`;
+                notification.innerHTML = `<span>${message}</span>`;
+                
+                document.body.appendChild(notification);
+                
+                requestAnimationFrame(() => { notification.classList.remove('translate-x-full'); });
+                setTimeout(() => {
+                    notification.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+```

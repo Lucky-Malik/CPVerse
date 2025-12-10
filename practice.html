@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice Tracker - CPVerse (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/3.0.3/plotly.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #000000; color: #e5e7eb; }
+        
+        .phase-card { transition: all 0.3s ease; }
+        .phase-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15); 
+            border-color: #10b981;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+        .progress-ring { transform: rotate(-90deg); }
+        .chart-container { min-height: 250px; }
+        
+        /* Phase Selector Styling */
+        .phase-selector { 
+            background-color: #1f2937; 
+            color: #9ca3af; 
+            border: 1px solid #374151;
+            transition: all 0.3s ease; 
+        }
+        .phase-selector:hover {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .phase-selector.active { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: black; 
+            border-color: transparent;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-700 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+                            <span class="text-black font-bold text-sm">CP</span>
+                        </div>
+                        <span class="text-xl font-bold text-white tracking-tight">CPVerse</span>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="dashboard.html" class="text-gray-400 hover:text-green-400 transition-colors">Dashboard</a>
+                        <a href="contests.html" class="text-gray-400 hover:text-green-400 transition-colors">Contests</a>
+                        <a href="practice.html" class="text-green-400 font-bold border-b-2 border-green-500 pb-1">Practice</a>
+                        <a href="insights.html" class="text-gray-400 hover:text-green-400 transition-colors">Insights</a>
+                        <a href="friends.html" class="text-gray-400 hover:text-green-400 transition-colors">Friends</a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="profile.html" class="text-gray-400 hover:text-white transition-colors">Profile</a>
+                    <div class="w-8 h-8 bg-gray-700 border border-green-900 rounded-full flex items-center justify-center text-green-400 font-bold text-sm">
+                        LM
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Practice Tracker</h1>
+            <p class="text-gray-400">Analyze your practice patterns and track improvement over time</p>
+        </div>
+
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-3">
+                <button class="phase-selector active px-6 py-3 rounded-lg font-medium transition-all" data-phase="current">
+                    Current Phase (30 days)
+                </button>
+                <button class="phase-selector px-6 py-3 rounded-lg font-medium transition-all" data-phase="previous1">
+                    Previous Phase #1
+                </button>
+                <button class="phase-selector px-6 py-3 rounded-lg font-medium transition-all" data-phase="previous2">
+                    Previous Phase #2
+                </button>
+                <button class="phase-selector px-6 py-3 rounded-lg font-medium transition-all" data-phase="comparison">
+                    Compare Phases
+                </button>
+            </div>
+        </div>
+
+        <div id="currentPhase" class="phase-content">
+            <div class="grid lg:grid-cols-4 gap-6 mb-8">
+                <div class="phase-card bg-gray-900 rounded-xl p-6 border border-green-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-green-400">Problems Solved</h3>
+                        <span class="text-2xl">🎯</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2">42</div>
+                    <div class="text-green-400 text-sm">+18% from last phase</div>
+                    
+                    <div class="mt-4">
+                        <svg class="w-16 h-16 mx-auto progress-ring" viewBox="0 0 36 36">
+                            <path class="text-gray-700" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="text-green-500" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="84, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                        </svg>
+                        <div class="text-center -mt-10 text-white text-xs font-bold relative z-10">84%</div>
+                    </div>
+                </div>
+
+                <div class="phase-card bg-gray-900 rounded-xl p-6 border border-blue-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-blue-400">Total Submissions</h3>
+                        <span class="text-2xl">📊</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2">87</div>
+                    <div class="text-blue-400 text-sm">48% success rate</div>
+                    
+                    <div class="mt-4">
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" style="width: 48%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-card bg-gray-900 rounded-xl p-6 border border-teal-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-teal-400">Avg Problem Rating</h3>
+                        <span class="text-2xl">⭐</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2">1,650</div>
+                    <div class="text-teal-400 text-sm">+120 from last phase</div>
+                    
+                    <div class="mt-4 flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-teal-400 rounded-full shadow-[0_0_5px_rgba(45,212,191,0.8)]"></div>
+                        <div class="w-3 h-3 bg-teal-400/70 rounded-full"></div>
+                        <div class="w-3 h-3 bg-teal-400/40 rounded-full"></div>
+                        <div class="w-3 h-3 bg-gray-700 rounded-full"></div>
+                    </div>
+                </div>
+
+                <div class="phase-card bg-gray-900 rounded-xl p-6 border border-orange-500/30">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-orange-400">Contests Participated</h3>
+                        <span class="text-2xl">🏆</span>
+                    </div>
+                    <div class="text-4xl font-bold text-white mb-2">8</div>
+                    <div class="text-orange-400 text-sm">3 podium finishes</div>
+                    
+                    <div class="mt-4 grid grid-cols-3 gap-1 text-gray-400">
+                        <div class="text-center">
+                            <div class="text-xs">🥇</div>
+                            <div class="text-xs font-bold text-white">1</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs">🥈</div>
+                            <div class="text-xs font-bold text-white">2</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs">🥉</div>
+                            <div class="text-xs font-bold text-white">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                    <h3 class="text-xl font-bold text-white mb-6">Submission Verdicts</h3>
+                    <div id="verdictChart" class="chart-container"></div>
+                </div>
+
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                    <h3 class="text-xl font-bold text-white mb-6">Problem Topics</h3>
+                    <div id="topicChart" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-2xl p-6 shadow-lg mb-8 border border-gray-800">
+                <h3 class="text-xl font-bold text-white mb-6">Hardest Problem Solved</h3>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-red-600 to-pink-700 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                        🔥
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-white mb-2">E. Graph Cost</h4>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <span class="bg-red-900/30 text-red-400 border border-red-900 px-2 py-1 rounded text-sm">Rating: 2100</span>
+                            <span class="bg-blue-900/30 text-blue-400 border border-blue-900 px-2 py-1 rounded text-sm">Codeforces</span>
+                            <span class="bg-green-900/30 text-green-400 border border-green-900 px-2 py-1 rounded text-sm">Accepted</span>
+                        </div>
+                        <p class="text-gray-400 text-sm">Complex graph problem involving minimum cost flow with constraints. Required advanced Dijkstra implementation with priority queues.</p>
+                    </div>
+                    <div class="text-left sm:text-right">
+                        <div class="text-2xl font-bold text-green-500">+25</div>
+                        <div class="text-sm text-gray-500">Rating gain</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                <h3 class="text-xl font-bold text-white mb-6">Recent Submissions</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-4 p-4 bg-green-900/10 border border-green-900/50 rounded-lg hover:bg-green-900/20 transition-colors">
+                        <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(22,163,74,0.5)]">
+                            <span class="text-black font-bold text-sm">✓</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-white">Tree Queries</div>
+                            <div class="text-sm text-gray-500">Codeforces • Rating: 1800 • 2 hours ago</div>
+                        </div>
+                        <div class="text-green-400 font-medium">Accepted</div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 p-4 bg-red-900/10 border border-red-900/50 rounded-lg hover:bg-red-900/20 transition-colors">
+                        <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(220,38,38,0.5)]">
+                            <span class="text-white text-sm">✗</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-white">Dynamic Programming Optimization</div>
+                            <div class="text-sm text-gray-500">AtCoder • Rating: 2000 • 5 hours ago</div>
+                        </div>
+                        <div class="text-red-400 font-medium">Wrong Answer</div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 p-4 bg-yellow-900/10 border border-yellow-900/50 rounded-lg hover:bg-yellow-900/20 transition-colors">
+                        <div class="w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center text-black shadow-[0_0_10px_rgba(202,138,4,0.5)]">
+                            <span class="font-bold text-sm">⏱</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-white">Matrix Exponentiation</div>
+                            <div class="text-sm text-gray-500">LeetCode • Rating: 1900 • 1 day ago</div>
+                        </div>
+                        <div class="text-yellow-500 font-medium">Time Limit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="comparisonPhase" class="phase-content hidden">
+            <div class="bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-800">
+                <h3 class="text-xl font-bold text-white mb-6">Phase Comparison</h3>
+                <div id="comparisonChart" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Phase switching functionality
+        document.querySelectorAll('.phase-selector').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.phase-selector').forEach(b => {
+                    b.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Show/hide content
+                const phase = this.dataset.phase;
+                document.querySelectorAll('.phase-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                
+                if (phase === 'comparison') {
+                    document.getElementById('comparisonPhase').classList.remove('hidden');
+                    renderComparisonChart();
+                } else {
+                    document.getElementById('currentPhase').classList.remove('hidden');
+                }
+            });
+        });
+
+        // Shared Layout Config for Dark Mode Plotly
+        const darkLayoutConfig = {
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e5e7eb' },
+            xaxis: { 
+                gridcolor: '#374151',
+                tickcolor: '#9ca3af',
+                linecolor: '#4b5563'
+            },
+            yaxis: { 
+                gridcolor: '#374151', 
+                tickcolor: '#9ca3af',
+                linecolor: '#4b5563'
+            },
+            legend: { font: { color: '#e5e7eb' } }
+        };
+
+        // Verdict Distribution Chart
+        const verdictData = [{
+            values: [42, 30, 10, 5],
+            labels: ['Accepted', 'Wrong Answer', 'Time Limit', 'Others'],
+            type: 'pie',
+            hole: 0.4,
+            marker: {
+                // Green, Red, Yellow, Gray
+                colors: ['#10b981', '#ef4444', '#eab308', '#4b5563']
+            },
+            textinfo: 'label+percent',
+            textposition: 'outside',
+            textfont: { color: '#e5e7eb' }
+        }];
+
+        const verdictLayout = {
+            ...darkLayoutConfig,
+            showlegend: false,
+            margin: { t: 20, r: 20, b: 20, l: 20 }
+        };
+
+        Plotly.newPlot('verdictChart', verdictData, verdictLayout, { responsive: true, displayModeBar: false });
+
+        // Topic Distribution Chart
+        const topicData = [{
+            x: ['DP', 'Graphs', 'Greedy', 'Math', 'Strings', 'Trees'],
+            y: [12, 8, 7, 6, 5, 4],
+            type: 'bar',
+            marker: {
+                // Replaced Purple with Teal/Cyan to fit theme, kept others distinct
+                color: ['#14b8a6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#ec4899']
+            }
+        }];
+
+        const topicLayout = {
+            ...darkLayoutConfig,
+            xaxis: { title: 'Topics', gridcolor: '#374151', color: '#e5e7eb' },
+            yaxis: { title: 'Problems Solved', gridcolor: '#374151', color: '#e5e7eb' },
+            margin: { t: 20, r: 20, b: 50, l: 50 }
+        };
+
+        Plotly.newPlot('topicChart', topicData, topicLayout, { responsive: true, displayModeBar: false });
+
+        // Comparison Chart
+        function renderComparisonChart() {
+            const comparisonData = [
+                {
+                    x: ['Problems Solved', 'Avg Rating', 'Submissions', 'Success Rate'],
+                    y: [42, 1650, 87, 48],
+                    name: 'Current Phase',
+                    type: 'bar',
+                    // Main Green
+                    marker: { color: '#10b981' }
+                },
+                {
+                    x: ['Problems Solved', 'Avg Rating', 'Submissions', 'Success Rate'],
+                    y: [35, 1500, 92, 38],
+                    name: 'Previous Phase',
+                    type: 'bar',
+                    // Muted Gray
+                    marker: { color: '#4b5563' }
+                }
+            ];
+
+            const comparisonLayout = {
+                ...darkLayoutConfig,
+                barmode: 'group',
+                xaxis: { title: 'Metrics', gridcolor: '#374151', color: '#e5e7eb' },
+                yaxis: { title: 'Values', gridcolor: '#374151', color: '#e5e7eb' },
+                margin: { t: 20, r: 20, b: 50, l: 50 }
+            };
+
+            Plotly.newPlot('comparisonChart', comparisonData, comparisonLayout, { responsive: true, displayModeBar: false });
+        }
+
+        // Animate cards on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.phase-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        });
+    </script>
+</body>
+</html>
