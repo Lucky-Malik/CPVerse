@@ -12,8 +12,8 @@ const DashboardPage = () => {
                 type: 'scatter',
                 mode: 'lines+markers',
                 name: 'Codeforces',
-                line: { color: '#ef4444', width: 4 },
-                marker: { size: 10, color: '#ef4444' }
+                line: { color: '#e57373', width: 2 },
+                marker: { size: 5, color: '#e57373' }
             },
             {
                 x: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
@@ -21,250 +21,150 @@ const DashboardPage = () => {
                 type: 'scatter',
                 mode: 'lines+markers',
                 name: 'AtCoder',
-                line: { color: '#3b82f6', width: 4 },
-                marker: { size: 10, color: '#3b82f6' }
+                line: { color: '#64b5f6', width: 2 },
+                marker: { size: 5, color: '#64b5f6' }
             }
         ];
 
         const layout = {
-            title: '',
-            xaxis: { 
-                title: 'Month',
-                color: '#94a3b8',
-                gridcolor: '#334155'
-            },
-            yaxis: { 
-                title: 'Rating',
-                color: '#94a3b8',
-                gridcolor: '#334155'
-            },
+            xaxis: { color: '#4b5563', gridcolor: '#1f2937', zeroline: false },
+            yaxis: { color: '#4b5563', gridcolor: '#1f2937', zeroline: false },
             showlegend: true,
-            legend: { 
-                x: 0, 
-                y: 1,
-                font: { color: '#e2e8f0' }
-            },
-            margin: { t: 20, r: 20, b: 50, l: 50 },
+            legend: { x: 0, y: 1, font: { color: '#9ca3af', size: 11 } },
+            margin: { t: 10, r: 10, b: 40, l: 50 },
             plot_bgcolor: 'rgba(0,0,0,0)',
             paper_bgcolor: 'rgba(0,0,0,0)',
-            font: { color: '#e2e8f0' }
+            font: { color: '#9ca3af', size: 11 },
         };
 
-        Plotly.newPlot('ratingChart', ratingData, layout, { responsive: true });
-
-        // Animate elements
-        const cards = document.querySelectorAll('.rating-card, .glass-card');
-        cards.forEach((card, index) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px) rotateX(-10deg)';
-            card.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0) rotateX(0deg)';
-            }, index * 150);
-        });
-
-        setTimeout(() => {
-            const progressBars = document.querySelectorAll('.progress-inner');
-            progressBars.forEach(bar => {
-                const width = bar.dataset.width;
-                if(width) {
-                    bar.style.width = '0%';
-                    setTimeout(() => {
-                        bar.style.transition = 'width 2s cubic-bezier(0.4, 0, 0.2, 1)';
-                        bar.style.width = width;
-                    }, 500);
-                }
-            });
-        }, 1000);
-
-        const handleMouseMove = (e) => {
-            const currentCards = document.querySelectorAll('.rating-card');
-            
-            currentCards.forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const cardX = (e.clientX - rect.left - rect.width / 2) / rect.width;
-                const cardY = (e.clientY - rect.top - rect.height / 2) / rect.height;
-                
-                card.style.transform = `perspective(1000px) rotateY(${cardX * 10}deg) rotateX(${-cardY * 10}deg) translateZ(10px)`;
-            });
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-        };
+        Plotly.newPlot('ratingChart', ratingData, layout, { responsive: true, displayModeBar: false });
     }, []);
 
+    const platforms = [
+        { name: 'Codeforces', rank: 'Pupil', rating: '1,450', delta: '+25 this month', progress: 58, color: '#e57373' },
+        { name: 'AtCoder', rank: 'Green', rating: '780', delta: '+15 this month', progress: 78, color: '#64b5f6' },
+        { name: 'LeetCode', rank: 'Knight', rating: '400', delta: 'Problems solved', progress: 80, color: '#ffb74d' },
+    ];
+
+    const recentActivity = [
+        { label: 'Solved "Tree Queries" on Codeforces', sub: 'Rating: 1800 · 2 hours ago', delta: '+12' },
+        { label: 'Participated in AtCoder ABC 350', sub: 'Rank: 156/2500 · 1 day ago', delta: '+15' },
+        { label: 'Completed daily LeetCode challenge', sub: '"Maximum Subarray" · 2 days ago', delta: '+Streak' },
+    ];
+
+    const quickLinks = [
+        { to: '/contests.html', label: 'Contests', sub: 'Upcoming competitions' },
+        { to: '/practice.html', label: 'Practice', sub: 'Review submissions' },
+        { to: '/insights.html', label: 'Insights', sub: 'Personalized tips' },
+        { to: '/friends.html', label: 'Friends', sub: 'Leaderboards' },
+    ];
+
     return (
-        <div className="relative pt-16">
+        <div className="relative pt-14">
             <BackgroundEffect type="net" id="particle-bg" className="particle-bg" />
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-                <div className="mb-8 floating-element">
-                    <h1 className="text-4xl font-bold neon-text mb-2">Welcome back, Lucky!</h1>
-                    <p className="text-slate-400">Here's your competitive programming overview</p>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+                {/* Header */}
+                <div className="mb-8">
+                    <h1 className="text-2xl font-semibold text-white tracking-tight mb-1">Welcome back, Lucky</h1>
+                    <p className="text-gray-500 text-sm">Here's your competitive programming overview</p>
                 </div>
 
-                <div className="glass-card rounded-2xl p-8 mb-8 floating-element opacity-0">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6">
-                            <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center floating-element">
-                                <span className="text-3xl font-bold text-white">LM</span>
+                {/* Profile card */}
+                <div className="bg-[#0f1117] border border-gray-800 rounded-xl p-5 mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-sm font-semibold text-gray-300">LM</div>
+                        <div>
+                            <div className="text-base font-medium text-white">Lucky Malik</div>
+                            <div className="text-xs text-gray-500">Competitive Programmer · Member since Jan 2023</div>
+                            <div className="flex gap-2 mt-1">
+                                <span className="text-xs text-gray-600 border border-gray-800 px-2 py-0.5 rounded">12 day streak</span>
+                                <span className="text-xs text-gray-600 border border-gray-800 px-2 py-0.5 rounded">Active</span>
                             </div>
-                            <div>
-                                <h2 className="text-2xl font-bold mb-1 text-white">Lucky Malik</h2>
-                                <p className="text-slate-400 mb-2">Competitive Programmer • Member since Jan 2023</p>
-                                <div className="flex items-center space-x-4 text-sm">
-                                    <span className="bg-purple-500/20 px-3 py-1 rounded-full text-purple-300">12 day streak</span>
-                                    <span className="bg-green-500/20 px-3 py-1 rounded-full text-green-300">Active</span>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-3xl font-semibold text-gray-200">1,220</div>
+                        <div className="text-xs text-gray-500 mt-0.5">Combined Rating</div>
+                    </div>
+                </div>
+
+                {/* Platform ratings */}
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    {platforms.map(p => (
+                        <div key={p.name} className="bg-[#0f1117] border border-gray-800 rounded-xl p-5">
+                            <div className="flex justify-between items-center mb-3">
+                                <span className="text-sm font-medium text-gray-300">{p.name}</span>
+                                <span className="text-xs text-gray-600 border border-gray-800 px-2 py-0.5 rounded">{p.rank}</span>
+                            </div>
+                            <div className="text-2xl font-semibold text-gray-200 mb-1">{p.rating}</div>
+                            <div className="text-xs text-gray-600 mb-3">{p.delta}</div>
+                            <div className="h-1 w-full bg-gray-800 rounded-full overflow-hidden">
+                                <div
+                                    className="h-1 rounded-full"
+                                    style={{ width: `${p.progress}%`, backgroundColor: p.color, opacity: 0.7 }}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Stats + Chart */}
+                <div className="grid lg:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-[#0f1117] border border-gray-800 rounded-xl p-5">
+                        <div className="text-sm font-medium text-gray-400 mb-4">Problem Statistics</div>
+                        <div className="grid grid-cols-2 gap-4">
+                            {[
+                                { label: 'Total Solved', value: '580', sub: '+42 this month' },
+                                { label: 'Accuracy Rate', value: '78%', sub: '+2% improvement' },
+                                { label: 'Current Streak', value: '12', sub: 'Best: 28 days' },
+                                { label: 'Avg Rating', value: '1,650', sub: '+50 this phase' },
+                            ].map(s => (
+                                <div key={s.label} className="border border-gray-800 rounded-lg p-3">
+                                    <div className="text-xs text-gray-500 mb-1">{s.label}</div>
+                                    <div className="text-xl font-semibold text-gray-200">{s.value}</div>
+                                    <div className="text-xs text-gray-600 mt-0.5">{s.sub}</div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
-                        <div className="text-right">
-                            <div className="text-4xl font-bold mb-1 neon-text">1,220</div>
-                            <div className="text-slate-400">Combined Rating</div>
-                        </div>
+                    </div>
+
+                    <div className="bg-[#0f1117] border border-gray-800 rounded-xl p-5">
+                        <div className="text-sm font-medium text-gray-400 mb-4">Rating Progress</div>
+                        <div id="ratingChart" style={{ height: '200px' }} />
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="rating-card glass-card rounded-xl p-6 text-white transform perspective-1000 opacity-0">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">Codeforces</h3>
-                            <span className="text-xs bg-red-500/30 px-2 py-1 rounded">Pupil</span>
-                        </div>
-                        <div className="text-3xl font-bold mb-2 neon-text">1,450</div>
-                        <div className="text-sm text-slate-400 mb-4">+25 this month</div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                            <div className="progress-inner bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-1000" data-width="58%"></div>
-                        </div>
-                        <div className="text-xs text-slate-400 mt-2">Progress to Specialist</div>
-                    </div>
-
-                    <div className="rating-card glass-card rounded-xl p-6 text-white transform perspective-1000 opacity-0">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">AtCoder</h3>
-                            <span className="text-xs bg-blue-500/30 px-2 py-1 rounded">Green</span>
-                        </div>
-                        <div className="text-3xl font-bold mb-2 neon-text">780</div>
-                        <div className="text-sm text-slate-400 mb-4">+15 this month</div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                            <div className="progress-inner bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-1000" data-width="78%"></div>
-                        </div>
-                        <div className="text-xs text-slate-400 mt-2">Progress to Blue</div>
-                    </div>
-
-                    <div className="rating-card glass-card rounded-xl p-6 text-white transform perspective-1000 opacity-0">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">LeetCode</h3>
-                            <span className="text-xs bg-green-500/30 px-2 py-1 rounded">Knight</span>
-                        </div>
-                        <div className="text-3xl font-bold mb-2 neon-text">400</div>
-                        <div className="text-sm text-slate-400 mb-4">Problems solved</div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                            <div className="progress-inner bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-1000" data-width="80%"></div>
-                        </div>
-                        <div className="text-xs text-slate-400 mt-2">Progress to Guardian</div>
+                {/* Recent Activity */}
+                <div className="bg-[#0f1117] border border-gray-800 rounded-xl p-5 mb-6">
+                    <div className="text-sm font-medium text-gray-400 mb-4">Recent Activity</div>
+                    <div className="space-y-2">
+                        {recentActivity.map((a, i) => (
+                            <div key={i} className="flex items-center justify-between py-2.5 border-b border-gray-800/60 last:border-0">
+                                <div>
+                                    <div className="text-sm text-gray-300">{a.label}</div>
+                                    <div className="text-xs text-gray-600 mt-0.5">{a.sub}</div>
+                                </div>
+                                <span className="text-xs text-gray-500 font-medium">{a.delta}</span>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                    <div className="glass-card rounded-2xl p-6 transform perspective-1000 opacity-0">
-                        <h3 className="text-xl font-bold text-white mb-6">Problem Statistics</h3>
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="text-center">
-                                <div className="text-3xl font-bold neon-text mb-2">580</div>
-                                <div className="text-slate-400">Total Solved</div>
-                                <div className="text-sm text-green-400 mt-1">+42 this month</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-3xl font-bold neon-text mb-2">78%</div>
-                                <div className="text-slate-400">Accuracy Rate</div>
-                                <div className="text-sm text-green-400 mt-1">+2% improvement</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-3xl font-bold neon-text mb-2">12</div>
-                                <div className="text-slate-400">Current Streak</div>
-                                <div className="text-sm text-slate-500 mt-1">Best: 28 days</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-3xl font-bold neon-text mb-2">1,650</div>
-                                <div className="text-slate-400">Avg Problem Rating</div>
-                                <div className="text-sm text-green-400 mt-1">+50 this phase</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="glass-card rounded-2xl p-6 transform perspective-1000 opacity-0">
-                        <h3 className="text-xl font-bold text-white mb-6">Rating Progress</h3>
-                        <div id="ratingChart" className="chart-container"></div>
-                    </div>
-                </div>
-
-                <div className="glass-card rounded-2xl p-6 mb-8 transform perspective-1000 opacity-0">
-                    <h3 className="text-xl font-bold text-white mb-6">Recent Activity</h3>
-                    <div className="space-y-4">
-                        <div className="flex items-center space-x-4 p-4 bg-green-500/10 rounded-lg border border-green-500/20 hover:bg-green-500/20 transition-all">
-                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">AC</span>
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium text-white">Solved "Tree Queries" on Codeforces</div>
-                                <div className="text-sm text-slate-400">Rating: 1800 • 2 hours ago</div>
-                            </div>
-                            <div className="text-green-400 font-medium">+12</div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20 hover:bg-blue-500/20 transition-all">
-                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">CT</span>
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium text-white">Participated in AtCoder ABC 350</div>
-                                <div className="text-sm text-slate-400">Rank: 156/2500 • 1 day ago</div>
-                            </div>
-                            <div className="text-blue-400 font-medium">+15</div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20 hover:bg-purple-500/20 transition-all">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">DC</span>
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-medium text-white">Completed daily LeetCode challenge</div>
-                                <div className="text-sm text-slate-400">"Maximum Subarray" • 2 days ago</div>
-                            </div>
-                            <div className="text-purple-400 font-medium">Streak +1</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="glass-card rounded-2xl p-6 transform perspective-1000 opacity-0">
-                    <h3 className="text-xl font-bold text-white mb-6">Quick Actions</h3>
-                    <div className="grid md:grid-cols-4 gap-4">
-                        <Link to="/contests" className="btn-3d glass-card rounded-lg p-4 text-center hover:shadow-lg transition-all">
-                            <div className="text-2xl mb-2">📅</div>
-                            <div className="font-medium text-white">Browse Contests</div>
-                            <div className="text-sm text-slate-400">Find upcoming competitions</div>
-                        </Link>
-                        <Link to="/practice" className="btn-3d glass-card rounded-lg p-4 text-center hover:shadow-lg transition-all">
-                            <div className="text-2xl mb-2">📈</div>
-                            <div className="font-medium text-white">Track Practice</div>
-                            <div className="text-sm text-slate-400">Analyze your progress</div>
-                        </Link>
-                        <Link to="/insights" className="btn-3d glass-card rounded-lg p-4 text-center hover:shadow-lg transition-all">
-                            <div className="text-2xl mb-2">🤖</div>
-                            <div className="font-medium text-white">AI Insights</div>
-                            <div className="text-sm text-slate-400">Get personalized tips</div>
-                        </Link>
-                        <Link to="/friends" className="btn-3d glass-card rounded-lg p-4 text-center hover:shadow-lg transition-all">
-                            <div className="text-2xl mb-2">👥</div>
-                            <div className="font-medium text-white">Compare Friends</div>
-                            <div className="text-sm text-slate-400">See leaderboards</div>
-                        </Link>
+                {/* Quick actions */}
+                <div className="bg-[#0f1117] border border-gray-800 rounded-xl p-5">
+                    <div className="text-sm font-medium text-gray-400 mb-4">Quick Access</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {quickLinks.map(l => (
+                            <Link
+                                key={l.to}
+                                to={l.to}
+                                className="border border-gray-800 rounded-lg p-4 hover:border-gray-600 hover:bg-gray-800/30 transition-all group"
+                            >
+                                <div className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors">{l.label}</div>
+                                <div className="text-xs text-gray-600 mt-1">{l.sub}</div>
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </div>
