@@ -1,9 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import CPVerseAPI from '../utils/api';
 
 const ContestsPage = () => {
   const [activeTab, setActiveTab] = useState('All');
+  const [contests, setContests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const tabs = ['All', 'Codeforces', 'AtCoder', 'LeetCode'];
+  const tabs = ['All', 'Codeforces', 'AtCoder', 'LeetCode', 'CodeChef'];
+
+  useEffect(() => {
+    const fetchContests = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await CPVerseAPI.getUpcomingContests({ days: 7, limit: 100 });
+        if (response && response.objects) {
+          setContests(response.objects);
+        } else {
+          setContests([]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch contests:", err);
+        setError("Failed to load upcoming contests. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContests();
+  }, []);
+
+  // Helper function to map platform host to UI representation
+  const getPlatformInfo = (host) => {
+    if (host.includes('codeforces.com')) return { id: 'cf', name: 'Codeforces', abbr: 'CF', colorClass: 'red' };
+    if (host.includes('atcoder.jp')) return { id: 'ac', name: 'AtCoder', abbr: 'AC', colorClass: 'blue' };
+    if (host.includes('leetcode.com')) return { id: 'lc', name: 'LeetCode', abbr: 'LC', colorClass: 'green' };
+    if (host.includes('codechef.com')) return { id: 'cc', name: 'CodeChef', abbr: 'CC', colorClass: 'orange' };
+    return { id: 'other', name: host, abbr: host.substring(0, 2).toUpperCase(), colorClass: 'gray' };
+  };
+
+  const filteredContests = contests.filter(contest => {
+    if (activeTab === 'All') return true;
+    const info = getPlatformInfo(contest.resource);
+    return info.name === activeTab;
+  });
+
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+    if (hours > 0) return `${hours}h`;
+    return `${minutes}m`;
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in relative z-10">
@@ -23,11 +83,13 @@ const ContestsPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
           <div className="text-gray-400 text-sm mb-1">This Week</div>
-          <div className="text-2xl font-bold text-white">4 Contests</div>
+          <div className="text-2xl font-bold text-white">
+             {loading ? '...' : contests.filter(c => new Date(c.start) <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length} Contests
+          </div>
         </div>
         <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <div className="text-gray-400 text-sm mb-1">Next Codeforces</div>
-          <div className="text-2xl font-bold text-red-400">In 2 Days</div>
+          <div className="text-gray-400 text-sm mb-1">Total Listed</div>
+          <div className="text-2xl font-bold text-blue-400">{loading ? '...' : contests.length}</div>
         </div>
         <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
           <div className="text-gray-400 text-sm mb-1">Target Rating</div>
@@ -49,7 +111,7 @@ const ContestsPage = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`filter-btn px-4 py-2 rounded-lg text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab ? 'active' : ''
+                  activeTab === tab ? 'active bg-blue-600 text-white border-blue-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:text-white'
                 }`}
               >
                 {tab}
@@ -59,137 +121,63 @@ const ContestsPage = () => {
 
           {/* Contests */}
           <div className="space-y-4">
-            {/* Contest Card 1 */}
-            <div className="contest-card bg-gray-900 rounded-2xl p-6 border border-gray-800 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-900/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-lg platform-cf">
-                    CF
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-red-400 transition-colors">
-                      Codeforces Round 918 (Div. 2)
-                    </h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
-                      <span className="flex items-center">
-                        <span className="mr-1">🕒</span> 23:35, Tomorrow
-                      </span>
-                      <span className="flex items-center">
-                        <span className="mr-1">⏱️</span> 2 hours
-                      </span>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : error ? (
+              <div className="bg-red-900/40 border border-red-500 text-red-300 p-4 rounded-xl">
+                {error}
+              </div>
+            ) : filteredContests.length === 0 ? (
+              <div className="bg-gray-900 border border-gray-800 text-gray-400 p-8 rounded-xl text-center">
+                No upcoming contests found for {activeTab}.
+              </div>
+            ) : (
+              filteredContests.map((contest) => {
+                const info = getPlatformInfo(contest.resource);
+                return (
+                  <div key={contest.id} className="contest-card bg-gray-900 rounded-2xl p-6 border border-gray-800 relative overflow-hidden group hover:border-gray-600 transition-colors">
+                    <div className={`absolute top-0 right-0 w-32 h-32 bg-${info.colorClass}-900/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110`}></div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between">
+                      <div className="flex items-start space-x-4">
+                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-lg platform-${info.id}`}>
+                          {info.abbr}
+                        </div>
+                        <div>
+                          <a href={contest.href} target="_blank" rel="noopener noreferrer">
+                            <h3 className={`text-xl font-bold text-white mb-1 group-hover:text-${info.colorClass}-400 transition-colors`}>
+                              {contest.event}
+                            </h3>
+                          </a>
+                          <div className="flex items-center space-x-4 text-sm text-gray-400">
+                            <span className="flex items-center">
+                              <span className="mr-1">🕒</span> {formatDate(contest.start)}
+                            </span>
+                            <span className="flex items-center">
+                              <span className="mr-1">⏱️</span> {formatDuration(contest.duration)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 md:mt-0 flex items-center space-x-3">
+                        <a 
+                          href={contest.href} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className={`bg-${info.colorClass}-900/40 text-${info.colorClass}-400 border border-${info.colorClass}-900/50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-${info.colorClass}-900/60 transition-colors`}
+                        >
+                          Register
+                        </a>
+                        <button className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-sm hover:text-white hover:border-gray-500 transition-colors">
+                          ➕ Add
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                  <button className="bg-red-900/40 text-red-400 border border-red-900/50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-900/60 transition-colors">
-                    Register
-                  </button>
-                  <button className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-sm hover:text-white hover:border-gray-500 transition-colors">
-                    ➕ Add
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Contest Card 2 */}
-            <div className="contest-card bg-gray-900 rounded-2xl p-6 border border-gray-800 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-900/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-lg platform-ac">
-                    AC
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
-                      AtCoder Beginner Contest 335
-                    </h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
-                      <span className="flex items-center">
-                        <span className="mr-1">🕒</span> 17:30, Sat
-                      </span>
-                      <span className="flex items-center">
-                        <span className="mr-1">⏱️</span> 100 mins
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                  <button className="bg-blue-900/40 text-blue-400 border border-blue-900/50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-900/60 transition-colors">
-                    Register
-                  </button>
-                  <button className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-sm hover:text-white hover:border-gray-500 transition-colors">
-                    ➕ Add
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Contest Card 3 */}
-            <div className="contest-card bg-gray-900 rounded-2xl p-6 border border-gray-800 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-green-900/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-lg platform-lc">
-                    LC
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-green-400 transition-colors">
-                      Weekly Contest 378
-                    </h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
-                      <span className="flex items-center">
-                        <span className="mr-1">🕒</span> 08:00, Sun
-                      </span>
-                      <span className="flex items-center">
-                        <span className="mr-1">⏱️</span> 1.5 hours
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                  <button className="bg-green-900/40 text-green-400 border border-green-900/50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-900/60 transition-colors">
-                    Register
-                  </button>
-                  <button className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-sm hover:text-white hover:border-gray-500 transition-colors">
-                    ➕ Add
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Contest Card 4 */}
-            <div className="contest-card bg-gray-900 rounded-2xl p-6 border border-gray-800 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-900/10 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-              <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-white text-lg shadow-lg platform-cc">
-                    CC
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-orange-400 transition-colors">
-                      Starters 115 (Div. 2 & 3)
-                    </h3>
-                    <div className="flex items-center space-x-4 text-sm text-gray-400">
-                      <span className="flex items-center">
-                        <span className="mr-1">🕒</span> 20:00, Next Wed
-                      </span>
-                      <span className="flex items-center">
-                        <span className="mr-1">⏱️</span> 2 hours
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                  <button className="bg-orange-900/40 text-orange-400 border border-orange-900/50 px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-900/60 transition-colors">
-                    Register
-                  </button>
-                  <button className="bg-gray-800 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-sm hover:text-white hover:border-gray-500 transition-colors">
-                    ➕ Add
-                  </button>
-                </div>
-              </div>
-            </div>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -198,7 +186,7 @@ const ContestsPage = () => {
           <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 shadow-lg sticky top-24">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center justify-between">
               <span>Calendar</span>
-              <span className="text-sm font-normal text-gray-400">January 2024</span>
+              <span className="text-sm font-normal text-gray-400">Current Month</span>
             </h3>
             
             <div className="grid grid-cols-7 gap-1 text-center text-xs text-gray-500 mb-2">

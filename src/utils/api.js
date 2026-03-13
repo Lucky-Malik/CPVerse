@@ -298,9 +298,8 @@ class CPVerseAPI {
 
         const path = '/api/v4/contest/';
         // Always use query-param method for clist.by requests
-        const win = (typeof window !== 'undefined') ? window : {};
-        const winUsername = win.CLIST_USERNAME || 'LuckyMalik';
-        const winApiKey = win.CLIST_API_KEY || 'ed2cf5f0423791676f67206f2e4c40ac0513eaf4';
+        const winUsername = import.meta.env.VITE_CLIST_USERNAME || 'LuckyMalik';
+        const winApiKey = import.meta.env.VITE_CLIST_API_KEY || 'ed2cf5f0423791676f67206f2e4c40ac0513eaf4';
         // Match the working curl request
         const url = buildUrl(path, {
             api_key: winApiKey,
