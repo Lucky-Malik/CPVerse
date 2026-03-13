@@ -410,12 +410,4 @@ class CPVerseAPI {
     }
 }
 
-// Export for use in frontend
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CPVerseAPI;
-}
-
-// Make it available globally for browser
-if (typeof window !== 'undefined') {
-    window.CPVerseAPI = CPVerseAPI;
-}
+export default CPVerseAPI;

@@ -7,11 +7,9 @@ const BackgroundEffect = ({ type, id, className }) => {
         let vantaEffect = null;
         
         const initVanta = () => {
-            if (!window.THREE) return;
-            
-            if (type === 'dots' && window.VANTA && window.VANTA.DOTS) {
+             if (type === 'dots' && window.VANTA && window.VANTA.DOTS) {
                 vantaEffect = window.VANTA.DOTS({
-                    el: `#${id}`,
+                    el: vantaRef.current,
                     mouseControls: true,
                     touchControls: true,
                     gyroControls: false,
@@ -22,7 +20,7 @@ const BackgroundEffect = ({ type, id, className }) => {
                 });
             } else if (type === 'net' && window.VANTA && window.VANTA.NET) {
                 vantaEffect = window.VANTA.NET({
-                    el: `#${id}`,
+                    el: vantaRef.current,
                     mouseControls: true,
                     touchControls: true,
                     gyroControls: false,
@@ -39,40 +37,16 @@ const BackgroundEffect = ({ type, id, className }) => {
             }
         };
 
-        const loadScripts = async () => {
-            if (!document.getElementById('three-script')) {
-                const threeScript = document.createElement('script');
-                threeScript.id = 'three-script';
-                threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-                document.head.appendChild(threeScript);
-                await new Promise(r => threeScript.onload = r);
-            }
-            
-            if (type === 'dots' && !document.getElementById('vanta-dots-script')) {
-                const vantaScript = document.createElement('script');
-                vantaScript.id = 'vanta-dots-script';
-                vantaScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.dots.min.js';
-                document.head.appendChild(vantaScript);
-                await new Promise(r => vantaScript.onload = r);
-            }
-            
-            if (type === 'net' && !document.getElementById('vanta-net-script')) {
-                const vantaScript = document.createElement('script');
-                vantaScript.id = 'vanta-net-script';
-                vantaScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js';
-                document.head.appendChild(vantaScript);
-                await new Promise(r => vantaScript.onload = r);
-            }
-            
+        // Small delay to ensure scripts are parsed
+        const timer = setTimeout(() => {
             initVanta();
-        };
-
-        loadScripts();
+        }, 100);
 
         return () => {
+            clearTimeout(timer);
             if (vantaEffect) vantaEffect.destroy();
         };
-    }, [type, id]);
+    }, [type]);
 
     return <div id={id} ref={vantaRef} className={className}></div>;
 };
